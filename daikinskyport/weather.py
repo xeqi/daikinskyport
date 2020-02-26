@@ -23,6 +23,15 @@ ATTR_FORECAST_HUMIDITY = "humidity"
 
 MISSING_DATA = -5002
 
+MAP_CONDITION = {
+    'clear': 'sunny',
+    'sunny': 'sunny',
+    'mostlysunny': 'partlycloudy',
+    'partlycloudy': 'partlycloudy',
+    'tstorms': 'lightning-rainy',
+    }
+
+
 def setup_platform(hass, config, add_entities, discovery_info=None):
     """Set up the Daikin Skyport weather platform."""
     if discovery_info is None:
@@ -62,7 +71,7 @@ class DaikinSkyportWeather(WeatherEntity):
     def condition(self):
         """Return the current condition."""
         try:
-            return self.get_forecast("weatherTodayCond")
+            return MAP_CONDITION.get(self.get_forecast("weatherTodayIcon"))
         except ValueError:
             return None
 
@@ -98,7 +107,7 @@ class DaikinSkyportWeather(WeatherEntity):
                 date_time = current_utc.astimezone(tz) + timedelta(days=(day-1))
                 forecast = {
                     ATTR_FORECAST_TIME: date_time.date().isoformat(),
-                    ATTR_FORECAST_CONDITION: self.weather["weatherDay" + str(day) + "Cond"],
+                    ATTR_FORECAST_CONDITION: MAP_CONDITION.get(self.weather["weatherDay" + str(day) + "Icon"]),
                     ATTR_FORECAST_TEMP: float(self.weather["weatherDay" + str(day) + "TempC"]),
                     ATTR_FORECAST_HUMIDITY: int(self.weather["weatherDay" + str(day) + "Hum"])
                     }
